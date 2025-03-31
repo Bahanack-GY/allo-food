@@ -1,1 +1,15 @@
 @import "tailwindcss";
+@theme {
+    --color-pink : #FFF0F0;
+    --color-pink-bg: #F8E7F6;
+    --color-deep-pink: #D61355;
+}
+.no-scrollbar {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 11 */
+  }
+  
+  .no-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+  }
+  

@@ -11,8 +11,14 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.6",
+    "@tanstack/react-query": "^5.66.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.475.0",
+    "motion": "^12.4.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-router-dom": "^7.1.5",
+    "tailwind-scrollbar-hide": "^2.0.0",
     "tailwindcss": "^4.0.6"
   },
   "devDependencies": {
