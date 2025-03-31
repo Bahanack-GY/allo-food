@@ -1,12 +1,12 @@
-import { Edit, MapPin, Phone, Mail, User as UserIcon } from "lucide-react";
+import { Edit, MapPin, Phone, Mail, User as UserIcon, Info, } from "lucide-react";
 import BackButton from "../components/common/BackButton";
 import Footer from "../components/common/Footer";
 import Background from "../components/common/Background";
 import bg from "../assets/icons/Pattern2.png";
-import image from "../assets/img/sample-burger.png"
+import image from "../assets/icons/coin.png"
 function User() {
     return (
-        <div className="min-h-screen bg-pink-bg bg-opacity-50">
+        <div className="min-h-screen bg-pink-bg bg-opacity-50 mb-32">
             <div className="opacity-20">
             <Background image={bg} />
             </div>
@@ -31,7 +31,7 @@ function User() {
                 <div className="w-full max-w-md bg-white rounded-xl p-6 mt-6 shadow-md">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-bold text-gray-800">Mon Profil</h1>
-                        <button className="flex items-center gap-2 bg-pink-200 px-4 py-2 rounded-xl text-deep-pink">
+                        <button className="flex items-center gap-2 bg-pink-200 px-4 py-2 rounded-xl text-deep-pink" onClick={() => alert("Modifier")}>
                             <Edit size={20} />
                             <span>Modifier</span>
                         </button>
@@ -80,10 +80,21 @@ function User() {
                     </div>
                 </div>
                 <div className="w-full max-w-md bg-white rounded-xl p-6 mt-6 shadow-md">
-                    <h1 className="text-2xl font-bold text-gray-800">Mes commandes</h1>
+                    <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">Mes points</h1>
+                    <button className="flex items-center gap-2 bg-pink-200 px-4 py-2 rounded-xl text-deep-pink">
+                        <Info size={20} />
+                        <span>En savoir plus</span>
+                    </button>
+                    </div>
+                    
                     <div className="flex flex-col gap-3">
-                        <div className="flex">
-                            <img src={image} alt="" />
+                        <div className="flex justify-center items-center flex-col">
+                            <img src={image} alt="" className="p-3 size-48"/>
+                            <p className="text-xl text-gray-500">Vous avez 100 points</p>
+                            <button className=" px-4 py-5 rounded-xl text-deep-pink mb-deep-pink">
+                                <span>Echanger mes points</span>
+                            </button>
                         </div>
 
                     </div>
