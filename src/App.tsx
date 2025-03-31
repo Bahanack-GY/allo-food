@@ -7,7 +7,7 @@ import Menu from "./pages/Menu";
 import FoodDetails from "./pages/FoodDetails";
 import Favoris from "./pages/Favoris";
 import ConfirmedPaiement from "./pages/ConfirmedPaiement";
-
+import SignInUp from "./pages/SignInUp";
 function App(){
   return(
 
@@ -21,6 +21,7 @@ function App(){
         <Route path="/details" element={<FoodDetails />} />
         <Route path="/favoris" element={<Favoris />} />
         <Route path="/confirmation" element={<ConfirmedPaiement />} />
+        <Route path="/signin" element={<SignInUp />} />
       </Routes>
       
     </div>
