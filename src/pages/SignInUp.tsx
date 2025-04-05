@@ -3,7 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, User, Phone, Calendar, MapPin } from "lucide-react";
 import Background from "../components/common/Background";
 import bg from "../assets/icons/Pattern2.png";
-import image from "../assets/icons/login.png"
+import image from "../assets/icons/login.png";
+import { useMutation } from "@tanstack/react-query";
+import { login, register } from "../API/users";
+import { useNavigate } from "react-router-dom";
 
 interface FormData {
     name?: string;
@@ -16,6 +19,7 @@ interface FormData {
 }
 
 function SignInUp() {
+    const navigate = useNavigate();
     const [isSignUp, setIsSignUp] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -24,6 +28,38 @@ function SignInUp() {
         password: "",
     });
     const [errors, setErrors] = useState<Partial<FormData>>({});
+
+    const loginMutation = useMutation({
+        mutationFn: (data: { email: string; password: string }) => login(data.email, data.password),
+        onSuccess: (response) => {
+            const token = response.data.token;
+            localStorage.setItem('authToken', token);
+            navigate('/');
+        },
+        onError: () => {
+            setErrors({ email: "Email ou mot de passe incorrect" });
+        }
+    });
+
+    const registerMutation = useMutation({
+        mutationFn: (data: FormData) => register({
+            name: data.name!,
+            email: data.email,
+            password: data.password,
+            confirmPassword: data.confirmPassword!,
+            phone: data.phone!,
+            location: data.location!
+        }),
+        onSuccess: (response) => {
+            const token = response.data.token;
+            localStorage.setItem('authToken', token);
+            navigate('/');
+        },
+        onError: () => {
+            setErrors({ email: "Erreur lors de l'inscription" });
+            
+        }
+    });
 
     const validateEmail = (email: string) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -65,9 +101,7 @@ function SignInUp() {
             if (!formData.phone || !validatePhone(formData.phone)) {
                 newErrors.phone = "Numéro de téléphone invalide (6 suivi de 8 chiffres)";
             }
-            if (!formData.dateOfBirth) {
-                newErrors.dateOfBirth = "Date de naissance requise";
-            }
+
             if (!formData.location?.trim()) {
                 newErrors.location = "Localisation requise";
             }
@@ -79,9 +113,11 @@ function SignInUp() {
         setErrors(newErrors);
 
         if (Object.keys(newErrors).length === 0) {
-            // Handle form submission
-            console.log("Form submitted:", formData);
-            // Add your API call here
+            if (isSignUp) {
+                registerMutation.mutate(formData);
+            } else {
+                loginMutation.mutate({ email: formData.email, password: formData.password });
+            }
         }
     };
 
@@ -95,7 +131,7 @@ function SignInUp() {
             </div>
 
             <div className="container mx-auto px-4 py-8">
-                <div className="max-w-md mx-auto bg-white rounded-xl  overflow-hidden">
+                <div className="max-w-md mx-auto bg-white rounded-xl overflow-hidden">
                     {/* Toggle Buttons */}
                     <div className="flex">
                         <button
@@ -289,16 +325,23 @@ function SignInUp() {
 
                                 <button
                                     type="submit"
-                                    className="w-full bg-deep-pink text-white py-3 rounded-xl font-medium hover:bg-opacity-90 transition-colors"
+                                    disabled={loginMutation.isPending || registerMutation.isPending}
+                                    className="w-full bg-deep-pink text-white py-3 rounded-xl font-medium hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {isSignUp ? "S'inscrire" : "Se connecter"}
+                                    {isSignUp 
+                                        ? registerMutation.isPending 
+                                            ? "Inscription en cours..." 
+                                            : "S'inscrire"
+                                        : loginMutation.isPending
+                                            ? "Connexion en cours..."
+                                            : "Se connecter"
+                                    }
                                 </button>
                             </motion.form>
                         </AnimatePresence>
                     </div>
                 </div>
             </div>
-
         </div>
     );
 }

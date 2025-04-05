@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Header from "../components/common/Header";
 import Background from "../components/common/Background";
 import { ChevronRight, Search } from "lucide-react";
@@ -7,19 +7,14 @@ import Burger from "../assets/icons/burger.png";
 import { motion, AnimatePresence } from "framer-motion";
 import SliderCard from "../components/SliderCard";
 import burger from "../assets/icons/burger-icon.png";
-import sampleBurger from "../assets/img/sample-burger.png";
 import FoodCard from "../components/FoodCard";
 import MenuPopulaire from "../components/PopularMenu";
 import bg from "../assets/icons/Pattern.png";
 import Footer from "../components/common/Footer";
+import { useQuery } from "@tanstack/react-query";
+import { getFoods, getBurgers, getChicken, getGrillades } from "../API/users";
 
-interface Promo {
-  title: string;
-  description: string;
-  image: string;
-}
-
-interface Product {
+interface FoodItem {
   id: string;
   name: string;
   description: string;
@@ -28,81 +23,6 @@ interface Product {
   stars: number;
   category: string;
 }
-
-const promoData: Promo[] = [
-  {
-    title: "Offre spéciale Saint Valentin",
-    description: "Nous servons les meilleurs burgers",
-    image: Burger,
-  },
-  {
-    title: "Pizza Party",
-    description: "2 pizzas achetées, 1 offerte",
-    image: Burger,
-  },
-  {
-    title: "Sandwich Délice",
-    description: "Sandwich + Boisson à prix réduit",
-    image: Burger,
-  },
-];
-
-const products: Product[] = [
-  {
-    id: "1",
-    name: "Beef Burger",
-    description: "100 gr Beef + tomato + cheese Lettuce",
-    price: 1500,
-    image: sampleBurger,
-    stars: 4.5,
-    category: "Burger"
-  },
-  {
-    id: "2",
-    name: "Chicken Burger",
-    description: "100 gr Chicken + tomato + cheese Lettuce",
-    price: 1200,
-    image: sampleBurger,
-    stars: 4.2,
-    category: "Burger"
-  },
-  {
-    id: "3",
-    name: "Margherita Pizza",
-    description: "Tomato sauce, mozzarella, fresh basil",
-    price: 2500,
-    image: sampleBurger,
-    stars: 4.8,
-    category: "Pizza"
-  },
-  {
-    id: "4",
-    name: "Pepperoni Pizza",
-    description: "Tomato sauce, mozzarella, pepperoni",
-    price: 2800,
-    image: sampleBurger,
-    stars: 4.6,
-    category: "Pizza"
-  },
-  {
-    id: "5",
-    name: "Club Sandwich",
-    description: "Chicken, bacon, lettuce, tomato",
-    price: 1800,
-    image: sampleBurger,
-    stars: 4.3,
-    category: "Sandwich"
-  },
-  {
-    id: "6",
-    name: "Grilled Chicken",
-    description: "Marinated chicken with special sauce",
-    price: 2000,
-    image: sampleBurger,
-    stars: 4.7,
-    category: "Poulet"
-  }
-];
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -129,23 +49,46 @@ function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeIndex, setActiveIndex] = useState<number | null>(0);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
+
+  // Fetch all foods
+  const { data: allFoods, isLoading: isLoadingFoods } = useQuery({
+    queryKey: ['foods'],
+    queryFn: async () => {
+      const response = await getFoods();
+      return response.data as FoodItem[];
+    }
+  });
+
+  // Fetch burgers
+  const { data: burgers, isLoading: isLoadingBurgers } = useQuery({
+    queryKey: ['burgers'],
+    queryFn: async () => {
+      const response = await getBurgers();
+      return response.data as FoodItem[];
+    }
+  });
+
+  // Fetch chicken
+  const { data: chicken, isLoading: isLoadingChicken } = useQuery({
+    queryKey: ['chicken'],
+    queryFn: async () => {
+      const response = await getChicken();
+      return response.data as FoodItem[];
+    }
+  });
+
+  // Fetch grillades
+  const { data: grillades, isLoading: isLoadingGrillades } = useQuery({
+    queryKey: ['grillades'],
+    queryFn: async () => {
+      const response = await getGrillades();
+      return response.data as FoodItem[];
+    }
+  });
 
   const handleSliderClick = (index: number) => {
     setActiveIndex(index === activeIndex ? null : index);
-    const category = ["Burger", "Pizza", "Sandwich", "Poulet"][index];
-    setFilteredProducts(products.filter(product => product.category === category));
   };
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) =>
-        prevIndex === promoData.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   const goToSlide = (index: number) => {
     setCurrentIndex(index);
@@ -154,6 +97,28 @@ function Home() {
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
+
+  // Get filtered products based on active category
+  const getFilteredProducts = (): FoodItem[] => {
+    if (isLoadingFoods || isLoadingBurgers || isLoadingChicken || isLoadingGrillades) {
+      return [];
+    }
+
+    switch (activeIndex) {
+      case 0:
+        return burgers || [];
+      case 1:
+        return grillades || [];
+      case 2:
+        return allFoods?.filter((food: FoodItem) => food.category === 'Sandwich') || [];
+      case 3:
+        return chicken || [];
+      default:
+        return allFoods || [];
+    }
+  };
+
+  const filteredProducts = getFilteredProducts();
 
   return (
     <div className="min-h-screen bg-pink-bg bg-opacity-50">
@@ -202,14 +167,14 @@ function Home() {
                 className="w-full flex justify-center items-center"
               >
                 <PromoCard
-                  title={promoData[currentIndex].title}
-                  description={promoData[currentIndex].description}
-                  image={promoData[currentIndex].image}
+                  title="Offre spéciale"
+                  description="Découvrez nos meilleures offres"
+                  image={Burger}
                 />
               </motion.div>
             </AnimatePresence>
             <div className="flex justify-center mt-4 gap-2">
-              {promoData.map((_, index) => (
+              {[0, 1, 2].map((index) => (
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
@@ -230,7 +195,7 @@ function Home() {
           className="overflow-x-auto flex no-scrollbar gap-4 py-4 px-4 sm:px-8"
         >
           <div className="flex gap-3">
-            {["Burger", "Pizza", "Sandwich", "Poulet"].map((item, index) => (
+            {["Burger", "Grillade", "Sandwich", "Poulet"].map((item, index) => (
               <SliderCard
                 key={index}
                 name={item}
@@ -251,7 +216,7 @@ function Home() {
             exit="hidden"
             className="grid grid-cols-2 px-4 sm:px-7 gap-3 md:grid-cols-3 lg:grid-cols-4"
           >
-            {filteredProducts.map((product) => (
+            {filteredProducts.map((product: FoodItem) => (
               <motion.div 
                 key={product.id}
                 variants={itemVariants}
@@ -289,22 +254,16 @@ function Home() {
           animate="visible"
           className="flex flex-col gap-3 pb-28 px-4 sm:px-7"
         >
-          <motion.div variants={itemVariants}>
-            <MenuPopulaire 
-              image="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=1981&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
-              name="Pepper Pizza" 
-              description="5Kg of Pizza" 
-              price={5000}
-            />
-          </motion.div>
-          <motion.div variants={itemVariants}>
-            <MenuPopulaire 
-              image="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=1981&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
-              name="Pepper Pizza" 
-              description="5Kg of Pizza" 
-              price={5000}
-            />
-          </motion.div>
+          {allFoods?.slice(0, 2).map((food: FoodItem) => (
+            <motion.div key={food.id} variants={itemVariants}>
+              <MenuPopulaire 
+                image={food.image}
+                name={food.name}
+                description={food.description}
+                price={food.price}
+              />
+            </motion.div>
+          ))}
         </motion.div>
       </motion.div>
 
